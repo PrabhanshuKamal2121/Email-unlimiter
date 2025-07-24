@@ -1,0 +1,864 @@
+{
+  "name": "Email Unlimiter",
+  "nodes": [
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1SHV8PbV3-2lyYwss0w_3EsQUO7HdG6NSJ2jcu0bO_Ew",
+          "mode": "list",
+          "cachedResultName": "Untitled spreadsheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SHV8PbV3-2lyYwss0w_3EsQUO7HdG6NSJ2jcu0bO_Ew/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SHV8PbV3-2lyYwss0w_3EsQUO7HdG6NSJ2jcu0bO_Ew/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -4580,
+        120
+      ],
+      "id": "fbfd9565-aca9-426d-af13-d713dadda8ac",
+      "name": "Get row(s) in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "oFGxBnFkSe2OODUQ",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -4800,
+        120
+      ],
+      "id": "e6d7ec33-237f-45d3-9fa9-8041632f5e82",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Web search - searches the internet,for research purpose.",
+        "url": "http://host.docker.internal:8089/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters0_Value', ``, 'string') }}"
+            },
+            {
+              "name": "format",
+              "value": "json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Include_Response_Headers_and_Status', ``, 'boolean') }}",
+              "neverError": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Never_Error', ``, 'boolean') }}"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -3740,
+        340
+      ],
+      "id": "f18a2fc2-4c7e-4cc5-8365-bdcbe5176f3f",
+      "name": "web_search",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 100
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawOutput = $input.first().json.output;\n\nconst cleanedOutput = rawOutput\n  .replace(/<think>[\\s\\S]*?<\\/think>/gi, '') // Remove <think>...</think>\n  .replace(/\\*\\*/g, '')                      // Remove double asterisks\n  .replace(/\\*/g, '')                        // Remove single asterisks\n  .replace(/\\\\n/g, ' ')                      // Remove literal \\n (escaped newline)\n  .replace(/\\n/g, ' ')                       // Remove actual newlines\n  .replace(/\\//g, '')                        // Remove all forward slashes\n  .replace(/\"/g, '')                         // Remove double quotes\n  .replace(/'/g, '')                         // Remove single quotes\n  .replace(/#/g, '') \n  // Replace hyphens with commas\n  .replace(/\\s+/g, ' ')                      // Collapse multiple spaces\n  .trim();                                   // Trim whitespace\n\nreturn [\n  {\n    json: {\n      output: cleanedOutput\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3420,
+        120
+      ],
+      "id": "99049536-0a94-47b9-839c-d5b8ff0aa919",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -3860,
+        340
+      ],
+      "id": "309949fc-597f-4a37-872f-d4d1843b3896",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "Xw6Z972WrQ0odb7Q",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "mistral:7b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -3120,
+        340
+      ],
+      "id": "e2133b3c-a5d4-4d68-b18e-b2e25f1cd35b",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "QVQGv2CqCZZnc2Gt",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1,
+      "position": [
+        -3620,
+        340
+      ],
+      "id": "3e46eaa7-53ff-4966-81f2-35663ef7b7fb",
+      "name": "Think1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawOutput = $input.first().json.output;\n\nconst cleanedOutput = rawOutput\n  .replace(/<think>[\\s\\S]*?<\\/think>/gi, '') // Remove <think>...</think>\n  .replace(/\\*\\*/g, '')                      // Remove double asterisks\n  .replace(/\\*/g, '')                        // Remove single asterisks\n  .replace(/\\\\n/g, ' ')                      // Remove literal \\n (escaped newline)\n  .replace(/\\n/g, ' ')                       // Remove actual newlines\n  .replace(/\\//g, '')                        // Remove all forward slashes\n  .replace(/\"/g, '')                         // Remove double quotes\n  .replace(/'/g, '')                         // Remove single quotes\n  .replace(/#/g, '') \n  // Replace hyphens with commas\n  .replace(/\\s+/g, ' ')                      // Collapse multiple spaces\n  .trim();                                   // Trim whitespace\n\nreturn [\n  {\n    json: {\n      output: cleanedOutput\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2840,
+        120
+      ],
+      "id": "88e1e5a7-c23a-4052-bdb1-cd03a1145822",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "model": "mistral:7b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -2540,
+        340
+      ],
+      "id": "208325e5-07f3-42d1-920d-b8cfad42725e",
+      "name": "Ollama Chat Model1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "QVQGv2CqCZZnc2Gt",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawOutput = $input.first().json.output;\n\nconst cleanedOutput = rawOutput\n  .replace(/<think>[\\s\\S]*?<\\/think>/gi, '') // Remove <think>...</think>\n  .replace(/\\*\\*/g, '')                      // Remove double asterisks\n  .replace(/\\*/g, '')                        // Remove single asterisks\n  .replace(/\\\\n/g, ' ')                      // Remove literal \\n (escaped newline)\n  .replace(/\\n/g, ' ')                       // Remove actual newlines\n  .replace(/\\//g, '')                        // Remove all forward slashes\n  .replace(/\"/g, '')                         // Remove double quotes\n  .replace(/'/g, '')                         // Remove single quotes\n  .replace(/#/g, '') \n  // Replace hyphens with commas\n  .replace(/\\s+/g, ' ')                      // Collapse multiple spaces\n  .trim();                                   // Trim whitespace\n\nreturn [\n  {\n    json: {\n      output: cleanedOutput\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2260,
+        120
+      ],
+      "id": "3804438b-553e-436d-a437-5a9b54c6ebf2",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "model": "mistral:7b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -1960,
+        340
+      ],
+      "id": "1b85fce0-688b-40fd-b22e-2a38c71a9cdc",
+      "name": "Ollama Chat Model2",
+      "credentials": {
+        "ollamaApi": {
+          "id": "QVQGv2CqCZZnc2Gt",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawOutput = $input.first().json.output;\n\nconst cleanedOutput = rawOutput\n  .replace(/<think>[\\s\\S]*?<\\/think>/gi, '') // Remove <think>...</think>\n  .replace(/\\*\\*/g, '')                      // Remove double asterisks\n  .replace(/\\*/g, '')                        // Remove single asterisks\n  .replace(/\\\\n/g, ' ')                      // Remove literal \\n (escaped newline)\n  .replace(/\\n/g, ' ')                       // Remove actual newlines\n  .replace(/\\//g, '')                        // Remove all forward slashes\n  .replace(/\"/g, '')                         // Remove double quotes\n  .replace(/'/g, '')                         // Remove single quotes\n  .replace(/#/g, '') \n  // Replace hyphens with commas\n  .replace(/\\s+/g, ' ')                      // Collapse multiple spaces\n  .trim();                                   // Trim whitespace\n\nreturn [\n  {\n    json: {\n      output: cleanedOutput\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1680,
+        120
+      ],
+      "id": "90e487be-49af-470e-90f3-6554a9fa2fb1",
+      "name": "Code3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Loop Over Items').item.json['COMPANY NAME'] }} (company)- {{ $('Code').item.json.output }}\n\nwhy the {{ $('Loop Over Items').item.json['COMPANY NAME'] }}  (company) is better than your company and what are the things that [your company] can learn from them.\nlist them , no word limit.\nminimum 20-30 listed bullet points.\n\n(your company) details below-\n[input details]",
+        "options": {
+          "systemMessage": "=why the {{ $('Loop Over Items').item.json['COMPANY NAME'] }}  (company) is better than [your company] and what are the things that [your company] can learn from them.\nlist them , no word limit.\nminimum 20-30 listed bullet points."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -2040,
+        120
+      ],
+      "id": "cc440038-ab28-495b-b1c8-ea54fb86ac84",
+      "name": "better_than"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Loop Over Items').item.json['COMPANY NAME'] }} (company)- {{ $('Code').item.json.output }}\nfind out things that are impressive about the company.",
+        "options": {
+          "systemMessage": "=find out things that are impressive about the {{ $('Get row(s) in sheet1').item.json['COMPANY NAME'] }} (company)."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -2620,
+        120
+      ],
+      "id": "fd41f3d0-a0c9-4583-b99f-dce7cb849397",
+      "name": "impressive_things"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Loop Over Items').item.json['COMPANY NAME'] }}(company) - {{ $json.output }}\n\n(your company) details below-\n[input details]",
+        "options": {
+          "systemMessage": "=find the common things of the both companies.\nlist them , no word limit."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -3200,
+        120
+      ],
+      "id": "f3dc532a-2a9c-419d-bd5d-3b4a6378e22b",
+      "name": "common"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a corporate research assistant.  \nGiven the following input data about a company:\n\n  • Company Name    – {{ $json[\"COMPANY NAME\"] }}  \n  • Company Type    – {{ $json[\"TYPE OF COMPANY\"] }}  \n  • Location        – {{ $json[\"ADDRESS\"] }}  \n  • Website/LinkedIn– {{ $json[\"COMPANY ID\"] }}  \n\nYour goal is to gather **only the details** needed to write a first‑contact, non‑salesy procurement outreach email. Organize your findings under these five headings, using concise bullets (1–2 lines each) and citing each fact’s source URL in parentheses:\n\n1. **Personalized Hook**  \n   - A recent project, award, or news item that shows the company’s expertise or growth  \n   - Their market scale or reputation (e.g., regions served, shipment volume, flagship clients)  \n\n2. **Sourcing & Procurement Insights**  \n   - Any public details on how they source raw materials or select suppliers  \n   - Key supply‑chain priorities (e.g., sustainability goals, lead‑time targets, cost strategies)  \n\n3. **Business Approach & Values**  \n   - Core mission, vision, or values related to quality, partnership, or innovation  \n   - Relevant CSR or sustainability initiatives (e.g., eco‑friendly materials, community programs)  \n\n4. **Challenges & Opportunities**  \n   - Recent industry or company‑specific pain points (e.g., logistics bottlenecks, material shortages)  \n   - Potential areas where a peer exporter could offer insight or collaboration  \n\n5. **Key Contacts or Roles**  \n   - (If publicly available) Names or titles of procurement, sourcing, or operations leaders  \n\n**Formatting Guidelines:**  \n- Use clear section headings exactly as listed.  \n- Bullet points only—no paragraphs.  \n- Keep total length under 200 words.  \n- Cite every bullet with its source URL in parentheses.  \n- Omit any items you cannot verify.  ",
+        "options": {
+          "systemMessage": "=must use the web_search tool to do reasearch\n\nYou are a world‑class corporate research assistant with expert web‑sourcing skills and deep knowledge of B2B procurement, sourcing, and supply‑chain dynamics—especially in the tile‑exporting and materials industries. Your job is to take structured company metadata and produce a laser‑focused intelligence brief that a first‑contact email generator can use to craft a warm, non‑salesy outreach about sourcing and procurement.\n\nAlways adhere to these rules:\n\n1. **Fact‑First, No Speculation**  \n   – Only include verifiable info from reputable sources (official websites, press releases, industry journals, major trade publications).  \n   – Never guess missing data; if you can’t find it, omit it.\n\n2. **Recent & Relevant**  \n   – Prioritize data from the last 2–3 years.  \n   – If older milestones are critical (e.g., founding date, a landmark partnership), note the year.\n\n3. **Procurement‑Centric Lens**  \n   – Surface any public details about their sourcing methods, supplier criteria, vendor selection, or sustainability in procurement.  \n   – Highlight strategic priorities (e.g., cost management, lead‑time reduction, quality assurance, eco‑friendly materials).\n\n4. **Structured Output with Headings**  \n   – Use the exact section headings:  \n     1. Personalized Hook  \n     2. Sourcing & Procurement Insights  \n     3. Business Approach & Values  \n     4. Challenges & Opportunities  \n     5. Key Contacts or Roles  \n   – Under each heading, list concise bullets (1–2 lines each).\n\n5. **Cite Sources**  \n   – After every bullet, include the source URL in parentheses.  \n   – Use official domain links (company domain, respected industry sites).\n\n6. **Brevity & Clarity**  \n   – Keep bullets tight and on‑point—no fluff.  \n   – Total output length should not exceed 250 words.\n\n7. **JSON‑Ready**  \n   – Return only JSON with keys matching the headings above, each containing an array of strings.  \n   – Do not wrap the JSON in any additional text or commentary.\n\nYour input JSON will provide:  \n  • “COMPANY NAME”  \n  • “WEBSITE”  \n  • “LINKEDIN”  \n  • “INDUSTRY”\n\nUse web search tools as needed. Your final response must be **pure JSON** for seamless downstream processing.  \n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -3820,
+        120
+      ],
+      "id": "55bc5210-450d-4c1a-84be-238deb9ddfb3",
+      "name": "company_research"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=give only the body of email just one email body in approx 91-100 words only, no extra this just start the email, don't add anything to it. just body of email, don't describe what's you have given, You are a professional business communication assistant. Your only job is to write clear, concise, and personalized first-contact emails.\n\n⚠️ Do not explain or describe the email you generate.\n\n--------------\nperson we are reffering too =={{ $('Loop Over Items').item.json.NAME }}\ntheir designation =={{ $('Loop Over Items').item.json.DESIGNATION }}\n-----------\ncompany type == {{ $('Loop Over Items').item.json['TYPE OF COMPANY'] }}\n-----------\n{{ $('Loop Over Items').item.json['COMPANY NAME'] }}== company we want to reachout\n-----------\n{{ $('Loop Over Items').item.json['COMPANY NAME'] }}'s details =={{ $('Code').item.json.output }}\n-----------\n{{ $('Loop Over Items').item.json['COMPANY NAME'] }}'s and [your company] common things=={{ $('Code1').item.json.output }}\n-----------\n{{ $('Loop Over Items').item.json['COMPANY NAME'] }}'s impressive things == {{ $('Code2').item.json.output }}\n-----------\nin which sector {{ $('Loop Over Items').item.json['COMPANY NAME'] }} better than [your company]=={{ $json.output }}\n-----------\nabout [your company] ==This document is written as a reference sheet you can use in company profiles, proposals, email attachments, website content, or AI content generation workflows.\n\n[your company guidelines and prompt]\n\n⸻\n\n⚠ Tone Guidelines\n\t•\tProfessional but not stiff\n\t•\tRespectful, never salesy\n\t•\tGenuinely curious and human\n\t•\tCalm, confident, and aware of their scale",
+        "options": {
+          "systemMessage": "=You are a [your company] email reachout creator.\n[your company details and examples]\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -1460,
+        120
+      ],
+      "id": "e849e1e5-064a-48d1-a299-51bdc0ddea4a",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama3.1:8b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -1380,
+        340
+      ],
+      "id": "865fa570-03aa-4e40-bbc7-a62acb91c1ef",
+      "name": "Ollama Chat Model3",
+      "credentials": {
+        "ollamaApi": {
+          "id": "QVQGv2CqCZZnc2Gt",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=give only the body of email just one email body in approx 90-95 words only.fill the fillers yourself as you have all the information given below.the output should be in html format, use <p> body of email </p> when starting and ending sentences which are on different line to look clean.the body will start like the given examples.don't use any negative words no, nothing etc.don't use any negative words no, nothing etc.don't use any negative words no, nothing etc.don't use any negative words no, nothing etc..leave lines or make it clean.i want just the main body, no dear (name), nothing after warm regards,just pure body of email, don't mess it up as this is directly related to out company growth.add line gaps between the body to make it look cleaner just like the given example.\n\ndon't use any negative words no, nothing etc.\ndon't use any negative words no, nothing etc.\ndon't use any negative words no, nothing etc.\ndon't use any negative words no, nothing etc.\n\nmake the previous email better,{{ $json.output }}\n--------------\nperson we are reffering too =={{ $('Loop Over Items').item.json.NAME }}\ntheir designation =={{ $('Loop Over Items').item.json.DESIGNATION }}\n-----------\ncompany type == {{ $('Loop Over Items').item.json['TYPE OF COMPANY'] }}\n-----------\n{{ $('Loop Over Items').item.json['COMPANY NAME'] }}== company we want to reachout\n-----------\n{{ $('Loop Over Items').item.json['COMPANY NAME'] }}'s details =={{ $('Code').item.json.output }}\n-----------\n{{ $('Loop Over Items').item.json['COMPANY NAME'] }}'s and [your company] common things=={{ $('Code1').item.json.output }}\n-----------\n{{ $('Loop Over Items').item.json['COMPANY NAME'] }}'s impressive things == {{ $('Code2').item.json.output }}\n-----------\nin which sector {{ $('Loop Over Items').item.json['COMPANY NAME'] }} better than [your company]=={{ $json.output }}\n-----------\nabout [your company] ==This document is written as a reference sheet you can use in company profiles, proposals, email attachments, website content, or AI content generation workflows.\n\n[your company guidelines and prompt]\n-----------\n\nYou are a [your company] email reachout creator.\n[Email body creator prompt]",
+        "options": {
+          "systemMessage": "=You are a [your comapny] email reachout creator.\nYou are generating a first-contact email to a company with the goal of starting a warm, professional relationship—not selling.\n\n\n Objective:\n\t•\tBuild rapport\n\t•\tUnderstand their business approach or sourcing needs\n\t•\tExpress our curiosity and capability (without pitching)\n\t•\tEncourage a short call (5–10 mins) if it makes sense\n\n DETAILED FINAL INSTRUCTION (for structured, high-quality email generation)\n[your details with example]"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -1100,
+        120
+      ],
+      "id": "51266aab-5a22-4ba6-956e-c79c6d49db6c",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1020,
+        340
+      ],
+      "id": "8fd2dbfb-c18a-4341-af98-9937deb60ed6",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "K3GAPPdmjuYI9Mj4",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('AI Agent1').item.json.output }} this is the body of the email.i want you to craft an subject for this email body taking inspiration from the given examples of the email. i want the out of just the subject nothing else. don't use 'Subject :' or 'sub:' in the final output, just the full sentence, cause it will directly attach to the gmail.\n\nbelow are the examples of subjects -\n\n[examples]",
+        "options": {
+          "systemMessage": "=you are given the body of the email.i want you to craft an subject for this email body. i want the out of just the subject nothing else."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -520,
+        120
+      ],
+      "id": "c16419e5-bd3b-4e5c-992a-90ada9835b5b",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the name from AI Agent1 output\nconst name = $('Get row(s) in sheet1').first().json.NAME|| '';\n\n// Get the message from the current input node\nconst rawMessage = $('Code4').first().json.output || '';\n\n// Replace literal \\n with actual newlines\nconst formattedMessage = rawMessage.replace(/\\\\n/g, \"\\n\");\n\n// Build greeting based on name availability\nconst greeting = name.trim() ? `Dear ${name},` : \"Hi,\";\n\nreturn [\n  {\n    json: {\n      greeting: greeting,\n      message: formattedMessage\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        120
+      ],
+      "id": "8d94a2c9-234b-4e7d-af3a-e557126dd356",
+      "name": "Code5"
+    },
+    {
+      "parameters": {
+        "sendTo": "[your email]",
+        "subject": "={{ $('AI Agent2').item.json.output }}",
+        "message": "=<p>{{ $json.greeting}}</p>\n{{ $json.message }}\n\n<p>Warm regards,</p>\n\n<p>[senders details]</p>\n\n",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -80,
+        480
+      ],
+      "id": "13297dc3-cc3a-4bca-8876-3884867f4367",
+      "name": "Send a message",
+      "webhookId": "d2a204ac-4429-4bfd-bf78-c6fafdc8697d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "DUuhfyq5Jdb2pB76",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawInput = $input.first().json.output;\n\nconst cleanedOutput = rawInput\n  .replace(/\\n\\n/g, '')   // Remove literal \\n\\n\n  .replace(/\\n/g, '');     // Remove literal \\n\n\nreturn [\n  {\n    json: {\n      output: cleanedOutput\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -740,
+        120
+      ],
+      "id": "ffbf9a67-eece-4ed6-a0bb-002856f70983",
+      "name": "Code4"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-nano",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -440,
+        340
+      ],
+      "id": "290738cc-02d7-483b-9911-bcc70c953036",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "K3GAPPdmjuYI9Mj4",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -4300,
+        120
+      ],
+      "id": "0f26ae3a-c77b-4449-a9d5-9797b726ff9d",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "sendTo": "[your email]",
+        "subject": "=sent all the emails",
+        "emailType": "text",
+        "message": "=hurray",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -3760,
+        -180
+      ],
+      "id": "c98ce34d-4f9b-413f-adfd-a2f8a33e3f5e",
+      "name": "Send a message1",
+      "webhookId": "d2a204ac-4429-4bfd-bf78-c6fafdc8697d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "DUuhfyq5Jdb2pB76",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -4080,
+        120
+      ],
+      "id": "f0416986-59d5-49b5-9c5a-d452b5792b87",
+      "name": "Wait",
+      "webhookId": "32970768-67ec-4964-b3e0-ab2ab420b9a6"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -4080,
+        -180
+      ],
+      "id": "7a743654-d6b0-4798-b020-d09102bd416f",
+      "name": "Limit1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "web_search": {
+      "ai_tool": [
+        [
+          {
+            "node": "company_research",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "common",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "company_research",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "common",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think1": {
+      "ai_tool": [
+        [
+          {
+            "node": "company_research",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "impressive_things",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "impressive_things",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "better_than",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "better_than",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "better_than": {
+      "main": [
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "impressive_things": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "common": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "company_research": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Code4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Code5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code5": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code4": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Limit1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "company_research",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit1": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "05a8ff6f-b31c-449d-91ee-7aa1b931f587",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5cc0498e4c4648fe5fcc14e1fba628e63e36e1dc801a3fe4ac7b2612c7e46c39"
+  },
+  "id": "1kvXrU5pNzAXQ0hO",
+  "tags": []
+}
