@@ -1,4 +1,4 @@
-# 📧 Email Unlimiter
+# 📧 Email Unlimiter(720 emails daily)
 
 ![Email Unlimiter Banner](https://github.com/PrabhanshuKamal2121/Email-unlimiter/blob/27b68ac554ca2efa4259af2e182b2fbee4df0a60/Email%20Unlimiter.png) <!-- Replace with your project banner -->
 
